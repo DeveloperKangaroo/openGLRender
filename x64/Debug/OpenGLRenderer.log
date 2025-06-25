@@ -1,0 +1,6 @@
+﻿  main.cpp
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\shaders\shader.h(108,55): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+  (compiling source file 'main.cpp')
+  
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(224,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  OpenGLRenderer.vcxproj -> C:\Users\Angel\source\repos\OpenGLRenderer\x64\Debug\OpenGLRenderer.exe
