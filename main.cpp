@@ -36,6 +36,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+//light pos
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
 int main() {
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -68,7 +71,8 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//compile shader program
-	Shader ourShader("shaders/vertex.glsl", "shaders/fragment.glsl");
+	Shader cubeShader("shaders/vertex.glsl", "shaders/fragment.glsl");
+	Shader lightSourceShader("shaders/vertex.glsl", "shaders/lightFragmentShader.glsl");
 
 	//triangle stuff
 
@@ -128,12 +132,12 @@ int main() {
 	glm::vec3(1.5f,  0.2f, -1.5f),
 	glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
-	unsigned int VAO, VBO;
-	glGenVertexArrays(1, &VAO);
+	unsigned int cubeVAO, VBO;
+	glGenVertexArrays(1, &cubeVAO);
 	glGenBuffers(1, &VBO);
 
 
-	glBindVertexArray(VAO);
+	glBindVertexArray(cubeVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
@@ -146,6 +150,15 @@ int main() {
 	//texture attributte
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+
+	unsigned int lightVAO;
+	glGenVertexArrays(1, &lightVAO);
+	glBindVertexArray(lightVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 	unsigned int texture1, texture2;
 
@@ -197,25 +210,10 @@ int main() {
 
 	stbi_image_free(data);
 
-	
-	//----
-
-
 	//Shader program instancing
-
-
-	ourShader.use();
-	ourShader.setInt("texture1", 0);
-	ourShader.setInt("texture2", 1);
-
-	//camera def
-	//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-	glm::mat4 view;
-	view = glm::lookAt(
-		glm::vec3(0.0f, 0.0f, 3.0f),
-		glm::vec3(0.0f, 0.0f, 3.0f),
-		glm::vec3(0.0f, 1.0f, 3.0f));
-
+	cubeShader.use();
+	cubeShader.setInt("texture1", 0);
+	cubeShader.setInt("texture2", 1);
 	
 	//Render loop
 	while (!glfwWindowShouldClose(window))
@@ -239,60 +237,69 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
-		//activate shader
-		ourShader.use();
-
-
-		//matrix things
-		//Coordinate sys def
+		//make cube matrix 
+		cubeShader.use();
+		cubeShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
+		cubeShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		ourShader.setMat4("projection", projection);
-
 		glm::mat4 view = camera.GetViewMatrix();
-		ourShader.setMat4("view", view);
+
+		cubeShader.setMat4("projection", projection);
+		cubeShader.setMat4("view", view);
+
+		glm::mat4 model = glm::mat4(1.0f);
+		cubeShader.setMat4("model", model);
+
+		glBindVertexArray(cubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//make light source cube
+		lightSourceShader.use();
+		lightSourceShader.setMat4("projection", projection);
+		lightSourceShader.setMat4("view", view);
+
+		glm::mat4(1.0f);
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::vec3(0.2));
+		lightSourceShader.setMat4("model", model);
+		
+		glBindVertexArray(lightVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 
 		//kebab con carne, pollo y salsa picante 🥙
-		//vertex uniform set
 
-
-
-
-		//To use EBO --
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		//----
-		//VBO
-
-
-		glBindVertexArray(VAO);
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
-		for (unsigned int i = 0; i < 10; i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, cubePositions[i]);
-			float angle = 20.0f * i;
-			if (i == 2)
-			{
-				model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-			}
-			else
-			{
-				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-			}
-			ourShader.setMat4("model", model);
+		//for (unsigned int i = 0; i < 10; i++)
+		//{
+		//	glm::mat4 model = glm::mat4(1.0f);
+		//	model = glm::translate(model, cubePositions[i]);
+		//	float angle = 20.0f * i;
+		//	if (i == 2)
+		//	{
+		//	//	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+		//		model = glm::mat4(1.0f);
+		//		model = glm::translate(model, lightPos);
+		//		model = glm::scale(model, glm::vec3(0.2f));
+		//	}
+		//	else
+		//	{
+		//		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+		//	}
+		//	ourShader.setMat4("model", model);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		//	glDrawArrays(GL_TRIANGLES, 0, 36);
+		//}
 
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
 
 	glfwTerminate();
