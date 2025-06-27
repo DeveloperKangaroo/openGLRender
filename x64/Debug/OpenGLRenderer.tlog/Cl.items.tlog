@@ -1,3 +1,10 @@
 C:\OpenGL\includes\src\glad.c;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\glad.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\backends\imgui_impl_glfw.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui_impl_glfw.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\backends\imgui_impl_opengl3.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui_impl_opengl3.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\imgui.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\imgui_demo.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui_demo.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\imgui_draw.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui_draw.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\imgui_tables.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui_tables.obj
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\imGui\imgui_widgets.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\imgui_widgets.obj
 C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\libs\stb_image_implementation.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\stb_image_implementation.obj
 C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp;C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\x64\Debug\main.obj

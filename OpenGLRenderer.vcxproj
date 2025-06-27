@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>shaders;%(AdditionalIncludeDirectories);libs</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>shaders;%(AdditionalIncludeDirectories);libs;$(ProjectDir)libs\imgui;$(ProjectDir)libs\imgui\backends</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,16 +130,61 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\..\OpenGL\includes\src\glad.c" />
+    <ClCompile Include="libs\imGui\backends\imgui_impl_glfw.cpp" />
+    <ClCompile Include="libs\imGui\backends\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="libs\imGui\imgui.cpp" />
+    <ClCompile Include="libs\imGui\imgui_demo.cpp" />
+    <ClCompile Include="libs\imGui\imgui_draw.cpp" />
+    <ClCompile Include="libs\imGui\imgui_tables.cpp" />
+    <ClCompile Include="libs\imGui\imgui_widgets.cpp" />
     <ClCompile Include="libs\stb_image_implementation.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="includes\stb_image.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_allegro5.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_android.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_dx10.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_dx12.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_dx9.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_glfw.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_glut.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_metal.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_opengl2.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_opengl3.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_osx.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_sdl2.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_sdl3.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_sdlgpu3.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_sdlgpu3_shaders.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_sdlrenderer2.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_sdlrenderer3.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_vulkan.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_wgpu.h" />
+    <ClInclude Include="libs\imGui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="libs\imGui\imconfig.h" />
+    <ClInclude Include="libs\imGui\imgui.h" />
+    <ClInclude Include="libs\imGui\imgui_internal.h" />
+    <ClInclude Include="libs\imGui\imstb_rectpack.h" />
+    <ClInclude Include="libs\imGui\imstb_textedit.h" />
+    <ClInclude Include="libs\imGui\imstb_truetype.h" />
     <ClInclude Include="libs\stb_image.h" />
     <ClInclude Include="shaders\shader.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="libs\imGui\.editorconfig" />
+    <None Include="libs\imGui\.gitattributes" />
+    <None Include="libs\imGui\.gitignore" />
+    <None Include="libs\imGui\backends\imgui_impl_metal.mm" />
+    <None Include="libs\imGui\backends\imgui_impl_osx.mm" />
+    <None Include="libs\imGui\backends\sdlgpu3\shader.frag" />
+    <None Include="libs\imGui\backends\sdlgpu3\shader.vert" />
+    <None Include="libs\imGui\backends\vulkan\generate_spv.sh" />
+    <None Include="libs\imGui\backends\vulkan\glsl_shader.frag" />
+    <None Include="libs\imGui\backends\vulkan\glsl_shader.vert" />
     <None Include="shaders\fragment.glsl" />
     <None Include="shaders\lightFragmentShader.glsl" />
     <None Include="shaders\vertex.glsl" />
@@ -147,6 +192,11 @@
   <ItemGroup>
     <Image Include="awesomeface.png" />
     <Image Include="container.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="libs\imGui\backends\sdlgpu3\build_instructions.txt" />
+    <Text Include="libs\imGui\backends\vulkan\build_instructions.txt" />
+    <Text Include="libs\imGui\LICENSE.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

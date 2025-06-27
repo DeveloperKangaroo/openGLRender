@@ -15,6 +15,10 @@
 #include "libs/glm/gtc/matrix_transform.hpp"
 #include "libs/glm/gtc/type_ptr.hpp"
 
+#include <imGui/imgui.h>
+#include <imGui/backends/imgui_impl_glfw.h>
+#include <imGui/backends/imgui_impl_opengl3.h>
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -23,8 +27,8 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 
 //settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1600;
+const unsigned int SCR_HEIGHT = 1200;
 
 //camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -36,8 +40,17 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+//so we can play with time
+static bool timePaused = false;
+static float engineTime = 0.0f;
+static float timeScale = 1.0f;
+
 //light pos
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
+//mouse toggle var
+bool cursorVisible = false;
+static bool tabPressedLastFrame = false;
 
 int main() {
 	glfwInit();
@@ -66,6 +79,17 @@ int main() {
 		return -1;
 
 	}
+
+	// Init ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+
+	// Init GLFW + OpenGL3 bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+	io.FontGlobalScale = 1.5f;
 
 	//depth testing
 	glEnable(GL_DEPTH_TEST);
@@ -224,11 +248,64 @@ int main() {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
+		if (!timePaused) {
+			engineTime += deltaTime * timeScale;
+		}
+
 		//input
 		processInput(window);
 
+		//Start imGui frame
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		//-------------------------------------------------------------------IMGUI------------------------------------------------------------
+		static ImVec4 clear_color = ImVec4(0.32f, 0.27f, 0.27f, 0.5f);
+
+		// Wireframe mode toggle
+		static bool wireframe = false;
+
+		ImGui::Begin("Debug");
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "World");
+		ImGui::Separator();
+
+		// Background color picker
+		ImGui::ColorEdit4("Bg Color", (float*)&clear_color, ImGuiColorEditFlags_NoInputs);
+
+		// Wireframe mode
+
+
+		ImGui::BeginGroup();
+		if (ImGui::Checkbox("Wireframe Mode", &wireframe)) {}
+		ImGui::SameLine();
+		if (ImGui::Button("btn2")) {}
+
+		ImGui::EndGroup();
+
+		ImGui::Separator();
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Time");
+		ImGui::Separator();
+
+
+		ImGui::Text("Time: %.2f", engineTime);
+		ImGui::SameLine();
+		ImGui::Checkbox("Pause Time", &timePaused);
+		ImGui::SliderFloat("Time Scale", &timeScale, 0.0f, 3.0f);
+
+
+		ImGui::End();
+
+		ImGui::Begin("Performance");
+		ImGui::Text("FPS: %.1f (%.3f ms/frame)", ImGui::GetIO().Framerate, 1000.0f / ImGui::GetIO().Framerate);
+		ImGui::End();
+
+		glPolygonMode(GL_FRONT_AND_BACK, wireframe == true ? GL_LINE : GL_FILL);
+
+		//-------------------------------------------------------------------IMGUI------------------------------------------------------------
+
 		//render
-		glClearColor(0.004f, 0.0f, 0.0f, 0.5f);
+		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//bind textures
@@ -243,14 +320,44 @@ int main() {
 		cubeShader.setVec3("light.position", lightPos);
 		cubeShader.setVec3("viewPos", camera.Position);
 
-		cubeShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-		cubeShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-		cubeShader.setVec3("material.specular", 0.5, 0.5f, 0.5f);
-		cubeShader.setFloat("material.shininess", 32.0f);
+		//--------------------------------------------------------------------------------------------------------
 
-		cubeShader.setVec3("light.ambient", 0.8f, 0.8f, 0.8f);
-		cubeShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-		cubeShader.setVec3("light.shininess", 1.0f, 1.0f, 1.0f);
+		static glm::vec3 materialAmbient = glm::vec3(1.0f, 0.5f, 0.31f);
+		static glm::vec3 materialDiffuse = glm::vec3(1.0f, 0.5f, 0.31f);
+		static glm::vec3 materialSpecular = glm::vec3(0.5f, 0.5f, 0.5f);
+
+		static glm::vec3 lightAmbient = glm::vec3(0.8f);
+		static glm::vec3 lightDiffuse = glm::vec3(0.5f);
+		static float shininess = 512.0f;
+
+		ImGui::Begin("Debug");
+
+		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Lighting");
+		ImGui::Separator();
+
+		ImGui::SliderFloat3("Material Ambient", (float*)&materialAmbient, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Material Diffuse", (float*)&materialDiffuse, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Material Specular", (float*)&materialSpecular, 0.0f, 1.0f);
+
+		ImGui::Separator();
+
+		ImGui::SliderFloat3("Light Ambient", (float*)&lightAmbient, 0.0f, 1.0f);
+		ImGui::SliderFloat3("Light Diffuse", (float*)&lightDiffuse, 0.0f, 1.0f);
+		ImGui::SliderFloat("Shininess", &shininess, 16.0f, 128.0f);
+
+		ImGui::End();
+
+		cubeShader.setVec3("material.ambient", materialAmbient);
+		cubeShader.setVec3("material.diffuse", materialDiffuse);
+		cubeShader.setVec3("material.specular", materialSpecular);
+
+		cubeShader.setVec3("light.ambient", lightAmbient);
+		cubeShader.setVec3("light.diffuse", lightDiffuse);
+		cubeShader.setFloat("material.shininess", shininess);
+
+
+
+		//--------------------------------------------------------------------------------------------------------------------
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -271,7 +378,7 @@ int main() {
 
 		glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		model = glm::rotate(glm::mat4(1.0f), currentFrame, glm::vec3(0.0f, 1.0f, 0.0f)) * model;
+		model = glm::rotate(glm::mat4(1.0f), engineTime, glm::vec3(0.0f, 1.0f, 0.0f)) * model;
 		model = glm::scale(model, glm::vec3(0.2));
 		lightSourceShader.setMat4("model", model);
 
@@ -308,6 +415,10 @@ int main() {
 		//	glDrawArrays(GL_TRIANGLES, 0, 36);
 		//}
 
+		// Render ImGui
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -315,6 +426,11 @@ int main() {
 	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &lightVAO);
 	glDeleteBuffers(1, &VBO);
+
+	//close imGui
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	glfwTerminate();
 
@@ -348,6 +464,7 @@ void mouse_callback(GLFWwindow* window, double xPosIn, double yPosIn)
 	lastX = xPos;
 	lastY = yPos;
 
+	if (!cursorVisible)
 	camera.ProcessMouseMovement(xOffset, yOffset);
 }
 
@@ -360,6 +477,25 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
 		glfwSetTime(0.0);
+	}
+	//toggle mouse
+	if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
+	{
+
+
+		if (!tabPressedLastFrame) {
+			cursorVisible = !cursorVisible;
+
+			if (cursorVisible)
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			else
+				glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		}
+
+		tabPressedLastFrame = true;
+	}
+	else {
+		tabPressedLastFrame = false;
 	}
 
 	//Camera controls
