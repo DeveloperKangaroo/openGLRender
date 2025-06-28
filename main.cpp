@@ -95,7 +95,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	//compile shader program
-	Shader cubeShader("shaders/vertex.glsl", "shaders/fragment.glsl");
+	Shader cubeShader("shaders/vertex.glsl", "shaders/fragmentPoint.glsl");
 	Shader lightSourceShader("shaders/vertex.glsl", "shaders/lightFragmentShader.glsl");
 
 	//triangle stuff
@@ -312,10 +312,15 @@ int main() {
 
 		//make cube matrix 
 		cubeShader.use();
-		cubeShader.setInt("material.diffuse", 0);
 		cubeShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 		cubeShader.setVec3("light.position", lightPos);
 		cubeShader.setVec3("viewPos", camera.Position);
+
+		cubeShader.setFloat("light.constant", 1.0f);
+		cubeShader.setFloat("light.linear", 0.09f);
+		cubeShader.setFloat("light.quadratic", 0.032f);
+
+		cubeShader.setInt("material.diffuse", 0);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
@@ -333,7 +338,7 @@ int main() {
 		static glm::vec3 lightAmbient = glm::vec3(0.8f);
 		static glm::vec3 lightDiffuse = glm::vec3(0.5f);
 		static glm::vec3 lightSpecular = glm::vec3(0.2f);
-		static float shininess = 32.0f;
+		static int exponent = 0; // from 0 (2^0) to 7 (2^7 = 128)
 
 		ImGui::Begin("Debug");
 
@@ -344,15 +349,19 @@ int main() {
 		ImGui::SliderFloat3("Light Diffuse", (float*)&lightDiffuse, 0.0f, 1.0f);
 		ImGui::SliderFloat3("Light Specular", (float*)&lightSpecular, 0.0f, 1.0f);
 
+	
+
+		ImGui::SliderInt("Shininess (2^x)", &exponent, 0, 7);
+		float shininess = pow(2.0f, (float)exponent); // 1.0 → 128.0
+		ImGui::Text("Shininess: %.1f", shininess);
+
 		ImGui::End();
 
-		cubeShader.setFloat("material.shininess", 32.0);					//Really annoying, for SOME reason this uniform isnt updated, which makes it default to 0.0, which makes the specular shader fail. Right now its set to 32.0 in the actual shader, this does not impact it
+		cubeShader.setFloat("material.shininess", shininess); 
 
 		cubeShader.setVec3("light.ambient", lightAmbient);
 		cubeShader.setVec3("light.diffuse", lightDiffuse);
 		cubeShader.setVec3("light.specular", lightSpecular);
-
-
 
 		//--------------------------------------------------------------------------------------------------------------------
 
@@ -362,11 +371,21 @@ int main() {
 		cubeShader.setMat4("projection", projection);
 		cubeShader.setMat4("view", view);
 
-		glm::mat4 model = glm::mat4(1.0f);
-		cubeShader.setMat4("model", model);
+		for (unsigned int i = 0; i < 10; i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
 
-		glBindVertexArray(cubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+
+			cubeShader.setMat4("model", model);
+
+			glBindVertexArray(cubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		glm::mat4 model = glm::mat4(1.0f);
 
 		//make light source cube
 		lightSourceShader.use();
@@ -389,28 +408,6 @@ int main() {
 		//kebab con carne, pollo y salsa picante 🥙
 
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-
-		//for (unsigned int i = 0; i < 10; i++)
-		//{
-		//	glm::mat4 model = glm::mat4(1.0f);
-		//	model = glm::translate(model, cubePositions[i]);
-		//	float angle = 20.0f * i;
-		//	if (i == 2)
-		//	{
-		//	//	model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-		//		model = glm::mat4(1.0f);
-		//		model = glm::translate(model, lightPos);
-		//		model = glm::scale(model, glm::vec3(0.2f));
-		//	}
-		//	else
-		//	{
-		//		model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
-		//	}
-		//	ourShader.setMat4("model", model);
-
-		//	glDrawArrays(GL_TRIANGLES, 0, 36);
-		//}
 
 		// Render ImGui
 		ImGui::Render();
