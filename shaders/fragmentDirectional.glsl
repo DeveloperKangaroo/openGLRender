@@ -5,9 +5,6 @@ in vec2 TexCoord;
 in vec3 Normal;
 in vec3 FragPos;
 
-uniform sampler2D texture1;
-uniform sampler2D texture2;
-
 uniform vec3 viewPos;
 
 struct Material {

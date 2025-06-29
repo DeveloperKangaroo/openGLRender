@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -186,8 +186,10 @@
     <None Include="libs\imGui\backends\vulkan\glsl_shader.frag" />
     <None Include="libs\imGui\backends\vulkan\glsl_shader.vert" />
     <None Include="shaders\fragmentDirectional.glsl" />
+    <None Include="shaders\fragmentLight.glsl" />
     <None Include="shaders\fragmentPoint.glsl" />
-    <None Include="shaders\lightFragmentShader.glsl" />
+    <None Include="shaders\fragmentSpotlight.glsl" />
+    <None Include="shaders\lightSourceFragmentShader.glsl" />
     <None Include="shaders\vertex.glsl" />
   </ItemGroup>
   <ItemGroup>

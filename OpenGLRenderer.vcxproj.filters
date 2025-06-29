@@ -156,7 +156,6 @@
   <ItemGroup>
     <None Include="shaders\fragmentDirectional.glsl" />
     <None Include="shaders\vertex.glsl" />
-    <None Include="shaders\lightFragmentShader.glsl" />
     <None Include="libs\imGui\backends\imgui_impl_metal.mm" />
     <None Include="libs\imGui\backends\imgui_impl_osx.mm" />
     <None Include="libs\imGui\.editorconfig" />
@@ -168,6 +167,8 @@
     <None Include="libs\imGui\backends\vulkan\glsl_shader.frag" />
     <None Include="libs\imGui\backends\vulkan\glsl_shader.vert" />
     <None Include="shaders\fragmentPoint.glsl" />
+    <None Include="shaders\fragmentSpotlight.glsl" />
+    <None Include="shaders\lightSourceFragmentShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">
