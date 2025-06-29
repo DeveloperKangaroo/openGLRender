@@ -19,6 +19,8 @@
 #include <imGui/backends/imgui_impl_glfw.h>
 #include <imGui/backends/imgui_impl_opengl3.h>
 
+#include <vector>
+
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -27,6 +29,14 @@ void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 void SetLightsToShader(Shader& cubeShader);
 void RenderLightEditor();
+//debug funcs
+void AddDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color);
+void InitDebugLines();
+void RenderDebugLines(Shader debugShader, glm::mat4 view, glm::mat4 projection);
+void ShowLightFromSurface(glm::vec3 lightDir, const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& normals, const glm::mat4& model);
+std::vector<glm::vec3> ExtractPositions(const float* vertices, size_t count);
+std::vector<glm::vec3> ExtractNormals(const float* vertices, size_t count);
+void ShowNormals(const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& normals, const glm::mat4& model);
 
 //settings
 const unsigned int SCR_WIDTH = 1600;
@@ -86,6 +96,15 @@ struct DebugSettings {
 	bool showWireframe = false;
 };
 DebugSettings debug;
+GLuint debugVAO;
+GLuint debugVBO[2];
+
+std::vector<glm::vec3> debugLineVerts;
+std::vector<glm::vec3> debugLineColors;
+std::vector<glm::vec3> positions;
+std::vector<glm::vec3> normals;
+
+//--
 
 int main() {
 	glfwInit();
@@ -132,6 +151,7 @@ int main() {
 	//compile shader program
 	Shader cubeShader("shaders/vertex.glsl", "shaders/fragmentLight.glsl");
 	Shader lightSourceShader("shaders/vertex.glsl", "shaders/lightSourceFragmentShader.glsl");
+	Shader debugShader("shaders/debug/lineVertex.glsl", "shaders/debug/lineFragment.glsl");
 
 	//triangle stuff
 
@@ -200,6 +220,15 @@ int main() {
 	glm::vec3(0.0f,  0.0f, -3.0f)
 	};
 
+	//separate vertices and normals
+	for (size_t i = 0; i < sizeof(vertices) / sizeof(float); i += 8) {
+		glm::vec3 pos(vertices[i], vertices[i + 1], vertices[i + 2]);
+		glm::vec3 norm(vertices[i + 3], vertices[i + 4], vertices[i + 5]);
+
+		positions.push_back(pos);
+		normals.push_back(norm);
+	}
+
 	unsigned int cubeVAO, VBO;
 	glGenVertexArrays(1, &cubeVAO);
 	glGenBuffers(1, &VBO);
@@ -227,6 +256,25 @@ int main() {
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	//DEBUG VAO & VBO
+
+	glGenVertexArrays(1, &debugVAO);
+	glGenBuffers(2, debugVBO);
+
+	// Position buffer
+	glBindVertexArray(debugVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, debugVBO[0]);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Color buffer
+	glBindBuffer(GL_ARRAY_BUFFER, debugVBO[1]);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+	//--
 
 	unsigned int diffuseMap, specularMap;
 
@@ -281,7 +329,7 @@ int main() {
 	cubeShader.use();
 	cubeShader.setInt("material.diffuse", 0);
 
-	
+	InitDebugLines();
 	//Render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -324,6 +372,8 @@ int main() {
 			
 		}
 		ImGui::EndGroup();
+
+		ImGui::Checkbox("Show Object Normals", &debug.showNormals);
 
 		ImGui::Separator();
 		ImGui::TextColored(ImVec4(1, 1, 0, 1), "Time");
@@ -481,7 +531,37 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
+		const int vertexCount = 36; // 12 triangles * 3 verts
+		auto positions = ExtractPositions(vertices, vertexCount);
+		auto normals = ExtractNormals(vertices, vertexCount);
 		
+		if (debug.showLightDirs) {
+			glm::vec3 Ldirection = glm::normalize(glm::vec3(-0.2f)); // or whatever
+
+			for (unsigned int i = 0; i < 10; i++) {
+				glm::mat4 model = glm::mat4(1.0f);
+				model = glm::translate(model, cubePositions[i]);
+				float angle = 20.0f * i;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+
+				ShowLightFromSurface(Ldirection, positions, normals, model);
+			}
+
+			RenderDebugLines(debugShader, view, projection);
+		}
+
+		if (debug.showNormals) {
+			for (unsigned int i = 0; i < 10; i++) {
+				glm::mat4 model = glm::mat4(1.0f);
+				model = glm::translate(model, cubePositions[i]);
+				float angle = 20.0f * i;
+				model = glm::rotate(model, glm::radians(angle), glm::vec3(0.5f, 1.0f, 0.0f));
+
+				ShowNormals(positions, normals, model);
+			}
+
+			RenderDebugLines(debugShader, view, projection);
+		}
 
 
 		//kebab con carne, pollo y salsa picante 🥙
@@ -636,4 +716,101 @@ void SetLightsToShader(Shader& cubeShader) {
 	//cubeShader.setVec3("spotLight.specular", 0.3f, 0.3f, 0.3f);
 
 
+}
+
+//debug functions
+
+void AddDebugLine(glm::vec3 from, glm::vec3 to, glm::vec3 color) {
+	debugLineVerts.push_back(from);
+	debugLineVerts.push_back(to);
+	debugLineColors.push_back(color);
+	debugLineColors.push_back(color);
+}
+
+void InitDebugLines() {
+	glGenVertexArrays(1, &debugVAO);
+	glGenBuffers(2, debugVBO);
+
+	glBindVertexArray(debugVAO);
+
+	// Positions (VBO 0)
+	glBindBuffer(GL_ARRAY_BUFFER, debugVBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 1000, nullptr, GL_DYNAMIC_DRAW); // allocate some space
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Colors (VBO 1)
+	glBindBuffer(GL_ARRAY_BUFFER, debugVBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 1000, nullptr, GL_DYNAMIC_DRAW); // allocate some space
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+}
+
+void RenderDebugLines(Shader debugShader, glm::mat4 view, glm::mat4 projection) {
+	if (debugLineVerts.empty()) return;
+
+	debugShader.use();
+	debugShader.setMat4("view", view);
+	debugShader.setMat4("projection", projection);
+
+	glBindVertexArray(debugVAO);
+
+	// Upload vertex data
+	glBindBuffer(GL_ARRAY_BUFFER, debugVBO[0]);
+	glBufferData(GL_ARRAY_BUFFER, debugLineVerts.size() * sizeof(glm::vec3), &debugLineVerts[0], GL_DYNAMIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, debugVBO[1]);
+	glBufferData(GL_ARRAY_BUFFER, debugLineColors.size() * sizeof(glm::vec3), &debugLineColors[0], GL_DYNAMIC_DRAW);
+
+	glDrawArrays(GL_LINES, 0, debugLineVerts.size());
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+
+	// Clear after drawing
+	debugLineVerts.clear();
+	debugLineColors.clear();
+}
+
+std::vector<glm::vec3> ExtractPositions(const float* vertices, size_t count) {
+	std::vector<glm::vec3> positions;
+	for (size_t i = 0; i < count; ++i) {
+		glm::vec3 pos(vertices[i * 8 + 0], vertices[i * 8 + 1], vertices[i * 8 + 2]);
+		positions.push_back(pos);
+	}
+	return positions;
+}
+
+std::vector<glm::vec3> ExtractNormals(const float* vertices, size_t count) {
+	std::vector<glm::vec3> normals;
+	for (size_t i = 0; i < count; ++i) {
+		glm::vec3 norm(vertices[i * 8 + 3], vertices[i * 8 + 4], vertices[i * 8 + 5]);
+		normals.push_back(norm);
+	}
+	return normals;
+}
+
+void ShowLightFromSurface(glm::vec3 lightDir, const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& normals, const glm::mat4& model) {
+	glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
+
+	for (size_t i = 0; i < positions.size(); ++i) {
+		glm::vec3 worldPos = glm::vec3(model * glm::vec4(positions[i], 1.0f));
+
+		glm::vec3 end = worldPos + (-lightDir) * 0.3f;
+		AddDebugLine(worldPos, end, glm::vec3(0.0f, 1.0f, 0.0f)); // green lines
+	}
+}
+
+void ShowNormals(const std::vector<glm::vec3>& positions, const std::vector<glm::vec3>& normals, const glm::mat4& model) {
+	glm::mat3 normalMatrix = glm::transpose(glm::inverse(glm::mat3(model)));
+
+	for (size_t i = 0; i < positions.size(); ++i) {
+		glm::vec3 worldPos = glm::vec3(model * glm::vec4(positions[i], 1.0f));
+		glm::vec3 worldNorm = glm::normalize(normalMatrix * normals[i]);
+
+		glm::vec3 normalEnd = worldPos + worldNorm * 0.2f;
+		AddDebugLine(worldPos, normalEnd, glm::vec3(0, 0, 1)); //blue lines
+	}
 }

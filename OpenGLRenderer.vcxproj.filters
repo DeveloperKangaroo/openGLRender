@@ -169,6 +169,9 @@
     <None Include="shaders\fragmentPoint.glsl" />
     <None Include="shaders\fragmentSpotlight.glsl" />
     <None Include="shaders\lightSourceFragmentShader.glsl" />
+    <None Include="shaders\fragmentLight.glsl" />
+    <None Include="shaders\debug\lineFragment.glsl" />
+    <None Include="shaders\debug\lineVertex.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg">

@@ -5,10 +5,11 @@ C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\shaders\shader.h(185,1
 C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\shaders\shader.h(185,18): warning C4566: character represented by universal-character-name '\uFE0F' cannot be represented in the current code page (1252)
   (compiling source file 'main.cpp')
   
-C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(289,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(471,40): warning C4305: 'argument': truncation from 'double' to 'T'
-C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(471,40): warning C4305:         with
-C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(471,40): warning C4305:         [
-C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(471,40): warning C4305:             T=float
-C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(471,40): warning C4305:         ]
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(337,22): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(521,40): warning C4305: 'argument': truncation from 'double' to 'T'
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(521,40): warning C4305:         with
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(521,40): warning C4305:         [
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(521,40): warning C4305:             T=float
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(521,40): warning C4305:         ]
+C:\Users\Angel\source\repos\OpenGLRenderer\OpenGLRenderer\main.cpp(767,47): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
   OpenGLRenderer.vcxproj -> C:\Users\Angel\source\repos\OpenGLRenderer\x64\Debug\OpenGLRenderer.exe

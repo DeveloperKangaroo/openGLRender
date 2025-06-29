@@ -185,6 +185,8 @@
     <None Include="libs\imGui\backends\vulkan\generate_spv.sh" />
     <None Include="libs\imGui\backends\vulkan\glsl_shader.frag" />
     <None Include="libs\imGui\backends\vulkan\glsl_shader.vert" />
+    <None Include="shaders\debug\lineFragment.glsl" />
+    <None Include="shaders\debug\lineVertex.glsl" />
     <None Include="shaders\fragmentDirectional.glsl" />
     <None Include="shaders\fragmentLight.glsl" />
     <None Include="shaders\fragmentPoint.glsl" />
